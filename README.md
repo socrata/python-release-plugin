@@ -11,7 +11,10 @@ in the following:
 
 ## How do I use it?
 
-First, you must include it in your own module's `setup.py` script as a `setup_requires` dependency. Then, the command needs to be added to the `cmd_class` dictionary that gets passed to the `setup` function. For example,
+First, you must include it in your own module's `setup.py` script as a `setup_requires`
+dependency. Then the command needs to be added to the `cmd_class` dictionary that gets passed to
+the `setup` function. The example snippet below illustrates how you would accomplish these first
+two steps:
 
 ```python
 from pyreleaseplugin import CleanCommand, ReleaseCommand
@@ -24,13 +27,15 @@ setup(
     description=("Everything is awesome"),
     license="TBD",
     keywords="awesomeness",
+    setup_requires=["pyreleaseplugin>=0.1"],
     cmdclass={"release": ReleaseCommand, "clean": CleanCommand})
 ```
 
-Notice that the module includes a `CleanCommand` as well. This is for convenience; it doe a more
-aggressive clean than the default setuptools equivalent.
+Notice that the module includes a `CleanCommand` as well. This is for convenience; it cleans more
+aggressively than the default setuptools equivalent, which is important for ensuring that we
+publish the correct artifacts.
 
-Use the following command at your favorite unix shell prompt to release your module:
+Use the following command at your favorite Unix shell prompt to release your module:
 
 ```sh
 python setup.py release

@@ -22,7 +22,7 @@ class ReleaseConfig:
     @classmethod
     def load(cls, filename):
         """
-        Insantiate a Config from the config file at the path specfied in `filename`.
+        Instantiate a Config from the config file at the path specfied in `filename`.
 
         It is expected that the config file specified by `filename` has a section named "release".
 
