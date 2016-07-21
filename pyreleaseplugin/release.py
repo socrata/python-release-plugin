@@ -7,10 +7,19 @@ This module defines a setuptools command that enables the following:
 4. adding a Git tag to the release commit
 5. publishing to a specified PyPi repository
 
-python setup.py release --version 2.7.1
+python setup.py release
 
 By default, the command will bump the patch version of the module if no version number is
-specified.
+specified on the command-line. The full list of allowed command-line options is as follows:
+
+    ("version=", "v", "new version number"),
+    ("description=", "d", "a description of the work done in the release"),
+    ("version-file=", "f", "a Python file containing the module version number"),
+    ("changelog-file=", "f", "a Markdown file containing a log of changes")
+
+The release command looks for a setup.cfg file in the current directory. If any of these options is
+not passed in on the command-line, it will look for them in the setup.cfg configuration file (under
+a section named "release").
 """
 
 from datetime import datetime
@@ -19,8 +28,6 @@ import re
 from setuptools import Command
 from subprocess import Popen
 
-from pyreleaseplugin.clean import CleanCommand
-from pyreleaseplugin.config import ReleaseConfig
 from pyreleaseplugin.git import commit_changes, is_tree_clean, push, tag
 
 
@@ -28,6 +35,15 @@ VERSION_RE = re.compile('^__version__\s*=\s*"(.*?)"$', re.MULTILINE)
 
 
 def current_version_from_version_file(version_file):
+    """
+    Extract the current version from `version_file`.
+
+    Args:
+        version_file (str): A path to a Python file with a version specifier
+
+    Returns:
+        The current version specifier
+    """
     with open(version_file, "r") as infile:
         contents = infile.read()
 
@@ -176,40 +192,32 @@ class ReleaseCommand(Command):
     """
     description = "Update the module version, update the CHANGELOG, tag the commit, push the " \
                   "changes, and publish the changes to a specified Pypi repository."
-    user_options = (
+
+    user_options = [
         ("version=", "v", "new version number"),
-        ("config=", "c", "a config file with a release section"),
-        ("description=", "d", "a description of the work done in the release")
-    )
+        ("description=", "d", "a description of the work done in the release"),
+        ("version-file=", "f", "a Python file containing the module version number"),
+        ("changelog-file=", "f", "a Markdown file containing a log changes")
+    ]
 
     def initialize_options(self):
         self.old_version = None     # the previous version
         self.version = None         # the new version
-        self.config = "setup.cfg"   # path to configuration file with "release" section
-        self.release_config = None  # an instance of a ReleaseConfig
+        self.version_file = None    # the version file
         self.changelog_file = None  # path to a changelog file
         self.description = None     # description text
 
     def finalize_options(self):
-        if not os.path.exists(self.config):
+        if not os.path.exists(self.version_file):
             raise IOError(
-                "Specified release config file ({}) does not exist".format(self.release_config))
+                "Specified version file ({}) does not exist".format(self.version_file))
 
-        self.release_config = ReleaseConfig.load(self.config)
-
-        if not os.path.exists(self.release_config.version_file):
+        if not os.path.exists(self.changelog_file):
             raise IOError(
-                "Specified version file ({}) does not exist".format(
-                    self.release_config.version_file))
+                "Specified changelog file ({}) does not exist".format(self.changelog_file))
 
-        if not os.path.exists(self.release_config.changelog_file):
-            raise IOError(
-                "Specified changelog file ({}) does not exist".format(
-                    self.release_config.changelog_file))
-
-        self.old_version = current_version_from_version_file(self.release_config.version_file)
+        self.old_version = current_version_from_version_file(self.version_file)
         self.version = self.version or bump_patch_version(self.old_version)
-        self.changelog_file = self.release_config.changelog_file
         self.description = self.description or get_description()
 
     def run(self):
@@ -220,7 +228,10 @@ class ReleaseCommand(Command):
             raise IOError()
 
         # update version specifier in module
-        update_version_file(self.release_config.version_file, self.version)
+        update_version_file(self.version_file, self.version)
+
+        # update changelog
+        add_changelog_entry(self.changelog_file, self.version, self.description)
 
         # commit changes
         commit_changes(self.version)
