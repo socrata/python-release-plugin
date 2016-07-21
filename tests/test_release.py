@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 import unittest
+from datetime import datetime
 
 from pyreleaseplugin.release import add_changelog_entry
 from pyreleaseplugin.release import bump_patch_version
@@ -48,9 +49,10 @@ class TestRelease(unittest.TestCase):
         changelog_file = tmp.name
         new_version = "0.1.0"
         add_changelog_entry(changelog_file, new_version, "Initial release")
+        today = datetime.today().strftime("%Y-%m-%d")
         expected = "# Changelog\n\n" + \
                    "All notable changes to this project will be documented in this file.\n\n" + \
-                   "0.1.0 (2016-07-20)\n------------------\nInitial release"
+                   "0.1.0 ({})\n------------------\nInitial release".format(today)
         with open(changelog_file, "r") as infile:
             changelog_contents = infile.read()
             try:
@@ -64,8 +66,8 @@ class TestRelease(unittest.TestCase):
         add_changelog_entry(changelog_file, new_version, "First patch release")
         expected = "# Changelog\n\n" + \
                    "All notable changes to this project will be documented in this file.\n\n" + \
-                   "0.1.1 (2016-07-20)\n------------------\nFirst patch release\n\n" + \
-                   "0.1.0 (2016-07-20)\n------------------\nInitial release"
+                   "0.1.1 ({})\n------------------\nFirst patch release\n\n".format(today) + \
+                   "0.1.0 ({})\n------------------\nInitial release".format(today)
         with open(changelog_file, "r") as infile:
             changelog_contents = infile.read()
             try:

@@ -49,7 +49,7 @@ The command also requires a configuration file to indicate where the changelog a
 
 ```
 [release]
-python-file-with-version = awesomepossum/_version.py
+version-file = awesomepossum/_version.py
 changelog-file = CHANGELOG.md
 ```
 
