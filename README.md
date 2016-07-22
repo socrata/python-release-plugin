@@ -11,13 +11,33 @@ in the following:
 
 ## How do I use it?
 
-First, you must include it in your own module's `setup.py` script as a `setup_requires`
-dependency. Then the command needs to be added to the `cmd_class` dictionary that gets passed to
-the `setup` function. The example snippet below illustrates how you would accomplish these first
-two steps:
+First things first: the pyrelaseplugin module is a release requirement. Strictly speaking, the
+`setup_requires` parameter to the setuptools `setup` method is intended to support exactly this
+kind of requirement. However, a problem arises; you can't import a module in setup.py before
+installing it. The solution -- imperfect as it is -- is to explicitly install the plugin add at the
+beginning of your `setup.py` script, as follows:
 
 ```python
-from pyreleaseplugin import CleanCommand, ReleaseCommand
+from subprocess import Popen
+Popen(["pip", "install", "pyreleaseplugin"]).wait()
+```
+
+Alternatively, you can simply explicitly install the plugin from the command-line. This only has to
+be done once (for the associated virtual environment):
+
+```sh
+pip install pyreleaseplugin
+```
+
+Additionally, you must include it in your own module's `setup.py` script as a `setup_requires`
+dependency. Then the new setup commands need to be added to the `cmd_class` dictionary that gets
+passed to the `setup` function. The example snippet below illustrates how you would accomplish
+these first two steps:
+
+```python
+from subprocess import Popen
+Popen(["pip", "install", "pyreleaseplugin"]).wait()
+from pyreleaseplugin import CleanCommand, ReleaseCommand, PyTest
 
 setup(
     name="awesomepossum",
@@ -27,8 +47,8 @@ setup(
     description="Everything is awesome",
     license="TBD",
     keywords="awesomeness",
-    setup_requires=["pyreleaseplugin>=0.1"],
-    cmdclass={"release": ReleaseCommand, "clean": CleanCommand})
+    setup_requires=["pyreleaseplugin"],
+    cmdclass={"release": ReleaseCommand, "clean": CleanCommand, "test": PyTest})
 ```
 
 In addition to setuptools command `ReleaseCommand`, you'll notice that the module includes a
