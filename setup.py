@@ -1,8 +1,8 @@
 import os
 import sys
 
+from pyreleaseplugin import CleanCommand, ReleaseCommand, PyTest
 from setuptools import find_packages, setup, Command
-from setuptools.command.test import test as TestCommand
 
 
 def read(fname):
@@ -12,37 +12,6 @@ def read(fname):
 
 install_requires_list = ["twine>=1.7"]
 tests_require = ["pytest>=2.9"]
-
-
-class CleanCommand(Command):
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        os.system('rm -vrf ./build ./dist ./*.pyc ./*.tgz ./*.egg-info')
-
-
-class PyTest(TestCommand):
-    user_options = [("pytest-args=", "a", "Arguments to pass to py.test")]
-
-    def initialize_options(self):
-        TestCommand.initialize_options(self)
-        self.pytest_args = []
-
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-    def run_tests(self):
-        import pytest
-        errno = pytest.main(self.pytest_args)
-        sys.exit(errno)
 
 
 version_file = "pyreleaseplugin/_version.py"
@@ -66,4 +35,4 @@ setup(
         "Intended Audience :: Socrata",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    cmdclass={"test": PyTest, "clean": CleanCommand})
+    cmdclass={"test": PyTest, "clean": CleanCommand, "release": ReleaseCommand})
