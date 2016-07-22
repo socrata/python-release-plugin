@@ -24,16 +24,22 @@ setup(
     version=__version__,
     author="Mr. Awesome Pants",
     author_email="mrawesomepants@theawesomefactory.com",
-    description=("Everything is awesome"),
+    description="Everything is awesome",
     license="TBD",
     keywords="awesomeness",
     setup_requires=["pyreleaseplugin>=0.1"],
     cmdclass={"release": ReleaseCommand, "clean": CleanCommand})
 ```
 
-Notice that the module includes a `CleanCommand` as well. This is for convenience; it cleans more
-aggressively than the default setuptools equivalent, which is important for ensuring that we
-publish the correct artifacts.
+In addition to setuptools command `ReleaseCommand`, you'll notice that the module includes a
+`CleanCommand` command and a `PyTest` command as well. These are for convenience. The clean command
+cleans more aggressively than the default setuptools equivalent, which is important for ensuring
+that we publish the correct artifacts. The test command allows us to execute tests using `py.test`
+with the following one-liner:
+
+```sh
+python setup.py test
+```
 
 Use the following command at your favorite Unix shell prompt to release your module:
 
