@@ -20,6 +20,8 @@ specified on the command-line. The full list of allowed command-line options is 
 The release command looks for a setup.cfg file in the current directory. If any of these options is
 not passed in on the command-line, it will look for them in the setup.cfg configuration file (under
 a section named "release").
+
+Testing...
 """
 
 from datetime import datetime
