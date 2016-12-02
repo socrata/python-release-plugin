@@ -178,7 +178,7 @@ def clean_description(description):
     """
     Ensure two (and only two) newlines at the end of the description text.
     """
-    return description.strip() + "\n\n"
+    return description.strip() + "\n\n" if description is not None else None
 
 
 def get_description():
