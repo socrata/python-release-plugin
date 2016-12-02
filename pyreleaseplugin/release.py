@@ -174,6 +174,13 @@ def publish_to_pypi():
         raise RuntimeError("Error publishing to PyPi")
 
 
+def clean_description(description):
+    """
+    Ensure two (and only two) newlines at the end of the description text.
+    """
+    return description.strip() + "\n\n"
+
+
 def get_description():
     """
     Prompt the user for a textual description of the work done in the release.
@@ -183,7 +190,7 @@ def get_description():
     """
     print("Enter a short description of the changes included in the release "
           "to include in the changelog, and enter CTRL-D to finish")
-    return get_input().strip() + "\n\n"
+    return clean_description(get_input())
 
 
 class ReleaseCommand(Command):
@@ -197,7 +204,8 @@ class ReleaseCommand(Command):
         ("version=", "v", "new version number"),
         ("description=", "d", "a description of the work done in the release"),
         ("version-file=", "f", "a Python file containing the module version number"),
-        ("changelog-file=", "f", "a Markdown file containing a log changes")
+        ("changelog-file=", "f", "a Markdown file containing a log changes"),
+        ("push-to-master=", "p", "whether the changes from this script should be pushed to master")
     ]
 
     def initialize_options(self):
@@ -206,6 +214,7 @@ class ReleaseCommand(Command):
         self.version_file = None    # the version file
         self.changelog_file = None  # path to a changelog file
         self.description = None     # description text
+        self.push_to_master = None  # whether to push to master
 
     def finalize_options(self):
         if not os.path.exists(self.version_file):
@@ -218,7 +227,8 @@ class ReleaseCommand(Command):
 
         self.old_version = current_version_from_version_file(self.version_file)
         self.version = self.version or bump_patch_version(self.old_version)
-        self.description = self.description or get_description()
+        self.description = clean_description(self.description) or get_description()
+        self.push_to_master = True if self.push_to_master is not None else None
 
     def run(self):
         # fail fast if working tree is not clean
@@ -240,11 +250,11 @@ class ReleaseCommand(Command):
         tag(self.version)
 
         # push changes to Github
-        push_to_github = parse_y_n_response(
+        push_to_master = self.push_to_master or parse_y_n_response(
             input("Would you like to push the changes to master? [y/n] ").strip())
 
-        if push_to_github:
-            print("Pushing changes to Github")
+        if push_to_master:
+            print("Pushing changes to the master branch on Github")
             push()
 
         # build and publish
