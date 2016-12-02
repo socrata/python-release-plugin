@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+testing (2016-12-01)
+--------------------
+This is a multi-line release description.
+
+Here is some more text.
+
 0.3.0 (2016-12-01)
 ------------------
 This is a multi-line release description.
