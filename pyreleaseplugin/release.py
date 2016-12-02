@@ -21,7 +21,7 @@ The release command looks for a setup.cfg file in the current directory. If any 
 not passed in on the command-line, it will look for them in the setup.cfg configuration file (under
 a section named "release").
 
-One more time...
+This has to be it...
 """
 
 from datetime import datetime
