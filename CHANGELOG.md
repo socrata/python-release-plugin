@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+0.2.1 (2016-12-06)
+------------------
+- Specify branch name when pushing to support pushing from Jenkins
+
 0.2.0 (2016-12-02)
 ------------------
 - Parameterized release options so that releases can happen from Jenkins in non-interactive mode
