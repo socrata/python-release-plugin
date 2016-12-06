@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+0.2.2 (2016-12-06)
+------------------
+"Initial release from Jenkins"
+
 0.2.1 (2016-12-06)
 ------------------
 - Specify branch name when pushing to support pushing from Jenkins
