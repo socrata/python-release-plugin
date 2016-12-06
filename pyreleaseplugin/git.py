@@ -37,11 +37,11 @@ def tag(version):
         raise RuntimeError("Error tagging release")
 
 
-def push_code():
+def push_code(branch):
     """
-    Push code changes to git.
+    Push code changes to git branch `branch`.
     """
-    code = Popen(["git", "push"]).wait()
+    code = Popen(["git", "push", "origin", branch]).wait()
     if code:
         raise RuntimeError("Error pushing changes to git")
 
@@ -55,9 +55,9 @@ def push_tags():
         raise RuntimeError("Error pushing tags to git")
 
 
-def push():
+def push(release_branch):
     """
-    Push the release commits to Github.
+    Push commits and tags to Github.
     """
-    push_code()
+    push_code(release_branch)
     push_tags()

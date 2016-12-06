@@ -250,12 +250,14 @@ class ReleaseCommand(Command):
         tag(self.version)
 
         # push changes to Github
+        # NOTE: this will push from the currently checked out branch to origin/master;
+        # TODO: accommodate releases from other branches
         push_to_master = self.push_to_master or parse_y_n_response(
             input("Would you like to push the changes to master? [y/n] ").strip())
 
         if push_to_master:
             print("Pushing changes to the master branch on Github")
-            push()
+            push("master")
 
         # build and publish
         build()
