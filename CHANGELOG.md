@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+0.2.3 (2017-01-10)
+------------------
+- Remove twine in favor of setuptools upload
+
 0.2.2 (2016-12-06)
 ------------------
 "Initial release from Jenkins"
