@@ -13,22 +13,25 @@ By default, the command will bump the patch version of the module if no version 
 specified on the command-line. The full list of allowed command-line options is as follows:
 
     ("version=", "v", "new version number"),
-    ("description=", "d", "a description of the work done in the release"),
     ("version-file=", "f", "a Python file containing the module version number"),
-    ("changelog-file=", "f", "a Markdown file containing a log of changes")
+    ("no-increment-version=", "n", "do not increment the version in version-file"),
+    ("description=", "d", "a description of the work done in the release"),        
+    ("changelog-file=", "c", "a Markdown file containing a log changes"),
+    ("push-to-master=", "p", "whether the changes from this script should be pushed to master")
+
 
 The release command looks for a setup.cfg file in the current directory. If any of these options is
 not passed in on the command-line, it will look for them in the setup.cfg configuration file (under
 a section named "release").
 """
 
-from datetime import datetime
 import os
 import re
-from setuptools import Command
+from datetime import datetime
 from subprocess import Popen
 
 from pyreleaseplugin.git import commit_changes, is_tree_clean, push, tag
+from setuptools import Command
 
 
 VERSION_RE = re.compile('^__version__\s*=\s*"(.*?)"$', re.MULTILINE)
@@ -202,19 +205,21 @@ class ReleaseCommand(Command):
 
     user_options = [
         ("version=", "v", "new version number"),
-        ("description=", "d", "a description of the work done in the release"),
         ("version-file=", "f", "a Python file containing the module version number"),
-        ("changelog-file=", "f", "a Markdown file containing a log changes"),
-        ("push-to-master=", "p", "whether the changes from this script should be pushed to master")
+        ("no-increment-version", "n", "do not increment the version in version-file"),
+        ("description=", "d", "a description of the work done in the release"),        
+        ("changelog-file=", "c", "a Markdown file containing a log changes"),
+        ("push-to-master", "p", "whether the changes from this script should be pushed to master")
     ]
 
     def initialize_options(self):
-        self.old_version = None     # the previous version
-        self.version = None         # the new version
-        self.version_file = None    # the version file
-        self.changelog_file = None  # path to a changelog file
-        self.description = None     # description text
-        self.push_to_master = None  # whether to push to master
+        self.old_version = None            # the previous version
+        self.version = None                # the new version
+        self.version_file = None           # the version file
+        self.no_increment_version = False  # whether to bump the version
+        self.changelog_file = None         # path to a changelog file
+        self.description = None            # description text
+        self.push_to_master = None         # whether to push to master
 
     def finalize_options(self):
         if not os.path.exists(self.version_file):
@@ -226,9 +231,15 @@ class ReleaseCommand(Command):
                 "Specified changelog file ({}) does not exist".format(self.changelog_file))
 
         self.old_version = current_version_from_version_file(self.version_file)
-        self.version = self.version or bump_patch_version(self.old_version)
+
+        self.no_increment_version = bool(self.no_increment_version)
+        if self.no_increment_version:
+            self.version = self.old_version
+        else:
+            self.version = self.version or bump_patch_version(self.old_version)
+
         self.description = clean_description(self.description) or get_description()
-        self.push_to_master = True if self.push_to_master is not None else None
+        self.push_to_master = bool(self.push_to_master)
 
     def run(self):
         # fail fast if working tree is not clean
@@ -237,8 +248,9 @@ class ReleaseCommand(Command):
                   "before proceeding.")
             raise IOError()
 
-        # update version specifier in module
-        update_version_file(self.version_file, self.version)
+        # conditionally update version specifier in module
+        if not self.no_increment_version:
+            update_version_file(self.version_file, self.version)
 
         # update changelog
         add_changelog_entry(self.changelog_file, self.version, self.description)
