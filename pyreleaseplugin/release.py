@@ -14,10 +14,10 @@ specified on the command-line. The full list of allowed command-line options is 
 
     ("version=", "v", "new version number"),
     ("version-file=", "f", "a Python file containing the module version number"),
-    ("no-increment-version=", "n", "do not increment the version in version-file"),
-    ("description=", "d", "a description of the work done in the release"),        
+    ("no-bump-version", "n", "do not bump the version in version-file"),
+    ("description=", "d", "a description of the work done in the release"),
     ("changelog-file=", "c", "a Markdown file containing a log changes"),
-    ("push-to-master=", "p", "whether the changes from this script should be pushed to master")
+    ("push-to-master", "p", "whether the changes from this script should be pushed to master")
 
 
 The release command looks for a setup.cfg file in the current directory. If any of these options is
@@ -206,7 +206,7 @@ class ReleaseCommand(Command):
     user_options = [
         ("version=", "v", "new version number"),
         ("version-file=", "f", "a Python file containing the module version number"),
-        ("no-increment-version", "n", "do not increment the version in version-file"),
+        ("no-bump-version", "n", "do not bump the version in version-file"),
         ("description=", "d", "a description of the work done in the release"),        
         ("changelog-file=", "c", "a Markdown file containing a log changes"),
         ("push-to-master", "p", "whether the changes from this script should be pushed to master")
@@ -216,7 +216,7 @@ class ReleaseCommand(Command):
         self.old_version = None            # the previous version
         self.version = None                # the new version
         self.version_file = None           # the version file
-        self.no_increment_version = False  # whether to bump the version
+        self.no_bump_version = False       # whether to bump the version
         self.changelog_file = None         # path to a changelog file
         self.description = None            # description text
         self.push_to_master = None         # whether to push to master
@@ -232,8 +232,8 @@ class ReleaseCommand(Command):
 
         self.old_version = current_version_from_version_file(self.version_file)
 
-        self.no_increment_version = bool(self.no_increment_version)
-        if self.no_increment_version:
+        self.no_bump_version = bool(self.no_bump_version)
+        if self.no_bump_version:
             self.version = self.old_version
         else:
             self.version = self.version or bump_patch_version(self.old_version)
@@ -249,7 +249,7 @@ class ReleaseCommand(Command):
             raise IOError()
 
         # conditionally update version specifier in module
-        if not self.no_increment_version:
+        if not self.no_bump_version:
             update_version_file(self.version_file, self.version)
 
         # update changelog
