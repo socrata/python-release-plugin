@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+0.2.7 (2018-04-12)
+------------------
+"- Testing release again"
+
 0.2.6 (2018-04-12)
 ------------------
 "- Testing the release process"
