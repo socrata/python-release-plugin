@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+0.2.6 (2018-04-12)
+------------------
+"- Testing the release process"
+
 0.2.4 (2018-04-11)
 ------------------
 - Added "--no-bump-version" option to support projects that manually set version
