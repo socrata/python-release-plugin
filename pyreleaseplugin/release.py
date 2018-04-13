@@ -13,8 +13,8 @@ By default, the command will bump the patch version of the module if no version 
 specified on the command-line. The full list of allowed command-line options is as follows:
 
     ("version=", "v", "new version number"),
-    ("version-file=", "f", "a Python file containing the module version number"),
     ("no-bump-version", "V", "do not bump the version in version-file"),
+    ("version-file=", "f", "a Python file containing the module version number"),    
     ("description=", "d", "a description of the work done in the release"),
     ("changelog-file=", "c", "a Markdown file containing a log changes"),
     ("no-update-changelog", "C", "do not update a Changlog file"),
@@ -207,8 +207,8 @@ class ReleaseCommand(Command):
 
     user_options = [
         ("version=", "v", "new version number"),
+        ("no-bump-version", "V", "do not bump the version in version-file"),        
         ("version-file=", "f", "a Python file containing the module version number"),
-        ("no-bump-version", "V", "do not bump the version in version-file"),
         ("description=", "d", "a description of the work done in the release"),
         ("changelog-file=", "c", "a Markdown file containing a log changes"),
         ("no-update-changelog", "C", "do not update a Changlog file"),
