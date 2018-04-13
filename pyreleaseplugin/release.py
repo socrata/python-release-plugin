@@ -13,11 +13,13 @@ By default, the command will bump the patch version of the module if no version 
 specified on the command-line. The full list of allowed command-line options is as follows:
 
     ("version=", "v", "new version number"),
-    ("version-file=", "f", "a Python file containing the module version number"),
-    ("no-bump-version", "n", "do not bump the version in version-file"),
+    ("no-bump-version", "V", "do not bump the version in version-file"),
+    ("version-file=", "f", "a Python file containing the module version number"),    
     ("description=", "d", "a description of the work done in the release"),
     ("changelog-file=", "c", "a Markdown file containing a log changes"),
+    ("no-update-changelog", "C", "do not update a Changlog file"),
     ("push-to-master", "p", "whether the changes from this script should be pushed to master")
+
 
 
 The release command looks for a setup.cfg file in the current directory. If any of these options is
@@ -205,10 +207,11 @@ class ReleaseCommand(Command):
 
     user_options = [
         ("version=", "v", "new version number"),
+        ("no-bump-version", "V", "do not bump the version in version-file"),        
         ("version-file=", "f", "a Python file containing the module version number"),
-        ("no-bump-version", "n", "do not bump the version in version-file"),
-        ("description=", "d", "a description of the work done in the release"),        
+        ("description=", "d", "a description of the work done in the release"),
         ("changelog-file=", "c", "a Markdown file containing a log changes"),
+        ("no-update-changelog", "C", "do not update a Changlog file"),
         ("push-to-master", "p", "whether the changes from this script should be pushed to master")
     ]
 
@@ -218,6 +221,7 @@ class ReleaseCommand(Command):
         self.version_file = None           # the version file
         self.no_bump_version = False       # whether to bump the version
         self.changelog_file = None         # path to a changelog file
+        self.no_update_changelog = False   # whether to skip changelog updates
         self.description = None            # description text
         self.push_to_master = None         # whether to push to master
 
@@ -226,7 +230,7 @@ class ReleaseCommand(Command):
             raise IOError(
                 "Specified version file ({}) does not exist".format(self.version_file))
 
-        if not os.path.exists(self.changelog_file):
+        if self.changelog_file and not os.path.exists(self.changelog_file):
             raise IOError(
                 "Specified changelog file ({}) does not exist".format(self.changelog_file))
 
@@ -238,7 +242,10 @@ class ReleaseCommand(Command):
         else:
             self.version = self.version or bump_patch_version(self.old_version)
 
-        self.description = clean_description(self.description) or get_description()
+        self.no_update_changelog = bool(self.no_update_changelog)
+        if not self.no_update_changelog:
+            self.description = clean_description(self.description) or get_description()
+
         self.push_to_master = bool(self.push_to_master)
 
     def run(self):
@@ -252,8 +259,9 @@ class ReleaseCommand(Command):
         if not self.no_bump_version:
             update_version_file(self.version_file, self.version)
 
-        # update changelog
-        add_changelog_entry(self.changelog_file, self.version, self.description)
+        # conditionally update changelog
+        if self.changelog_file and self.description and not self.no_update_changelog:
+            add_changelog_entry(self.changelog_file, self.version, self.description)
 
         # commit changes
         commit_changes(self.version)
