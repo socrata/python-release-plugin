@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+0.2.8 (2018-04-13)
+------------------
+"- Added `no-update-changelog` option to support releases with no CHANGELOG file
+"
+
 0.2.7 (2018-04-12)
 ------------------
 "- Testing release again"
