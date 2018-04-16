@@ -255,16 +255,22 @@ class ReleaseCommand(Command):
                   "before proceeding.")
             raise IOError()
 
+        # keep track of whether we make any changes
+        something_to_commit = False
+
         # conditionally update version specifier in module
         if not self.no_bump_version:
             update_version_file(self.version_file, self.version)
+            something_to_commit = True
 
         # conditionally update changelog
         if self.changelog_file and self.description and not self.no_update_changelog:
             add_changelog_entry(self.changelog_file, self.version, self.description)
+            something_to_commit = True
 
-        # commit changes
-        commit_changes(self.version)
+        # commit changes, if there are any
+        if something_to_commit:
+            commit_changes(self.version)
 
         # tag the release
         tag(self.version)
