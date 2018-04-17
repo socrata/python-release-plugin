@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+0.2.9 (2018-04-16)
+------------------
+- Fixed to check for changes before attempting to commit (since `git commit` w/o changes exits non-zero)
+
 0.2.8 (2018-04-13)
 ------------------
 - Added `no-update-changelog` option to support releases with no CHANGELOG file
