@@ -1,4 +1,4 @@
-# Python Release Plugin
+HI!# Python Release Plugin
 
 This release plugin is intended to be used in conjunction with setuptools to enable building and
 releasing a Python module with a single setuptools command `release`. Running the command results
@@ -127,4 +127,3 @@ The libraries are built and released from jenkins-build. See the jobs
 that start with the "python-release-plugin" prefix.
 
 The build job is configured to fail if prospector finds any issues.
-
