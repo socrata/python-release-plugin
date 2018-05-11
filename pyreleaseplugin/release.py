@@ -161,11 +161,12 @@ def parse_y_n_response(response):
     return True if response.strip().lower() in ('y', 'yes') else False
 
 
-def build():
+def build(universal=False):
     """
     Build a wheel distribution.
     """
-    code = Popen(["python", "setup.py", "clean", "bdist_wheel"]).wait()
+    universal_flag = "--universal" if universal else ""
+    code = Popen(["python", "setup.py", "clean", "bdist_wheel", universal_flag]).wait()
     if code:
         raise RuntimeError("Error building wheel")
 
@@ -212,7 +213,8 @@ class ReleaseCommand(Command):
         ("description=", "d", "a description of the work done in the release"),
         ("changelog-file=", "c", "a Markdown file containing a log changes"),
         ("no-update-changelog", "C", "do not update a Changlog file"),
-        ("push-to-master", "p", "whether the changes from this script should be pushed to master")
+        ("push-to-master", "p", "whether the changes from this script should be pushed to master"),
+        ("universal-wheel", "u", "publish universal wheel for the release")
     ]
 
     def initialize_options(self):
@@ -224,6 +226,7 @@ class ReleaseCommand(Command):
         self.no_update_changelog = False   # whether to skip changelog updates
         self.description = None            # description text
         self.push_to_master = None         # whether to push to master
+        self.universal_wheel = None        # whether to publish a universal wheel
 
     def finalize_options(self):
         if not os.path.exists(self.version_file):
@@ -247,6 +250,8 @@ class ReleaseCommand(Command):
             self.description = clean_description(self.description) or get_description()
 
         self.push_to_master = bool(self.push_to_master)
+
+        self.universal_wheel = bool(self.universal_wheel)
 
     def run(self):
         # fail fast if working tree is not clean
@@ -286,5 +291,5 @@ class ReleaseCommand(Command):
             push("master")
 
         # build and publish
-        build()
+        build(universal=self.universal_wheel)
         publish_to_pypi()
