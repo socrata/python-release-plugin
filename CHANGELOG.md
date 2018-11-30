@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+0.2.10 (2018-11-30)
+-------------------
+"update es client and models with latest mapping changes"
+
 0.2.9 (2018-04-16)
 ------------------
 - Fixed to check for changes before attempting to commit (since `git commit` w/o changes exits non-zero)
