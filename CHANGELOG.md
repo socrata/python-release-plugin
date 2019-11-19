@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+0.2.11 (2019-11-19)
+-------------------
+""
+
 0.2.10 (2018-11-30)
 -------------------
 "update es client and models with latest mapping changes"
