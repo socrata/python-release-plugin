@@ -8,6 +8,7 @@ def is_tree_clean():
     Returns:
         False if there are uncommited changes, True otherwise
     """
+    # pylint: disable=simplifiable-if-expression
     return False if Popen(["git", "diff-files", "--quiet"]).wait() else True
 
 
