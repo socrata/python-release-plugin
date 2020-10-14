@@ -174,7 +174,7 @@ def publish_to_pypi():
     """
     Publish the distribution to our local PyPi.
     """
-    code = Popen(["python", "setup.py", "bdist_wheel", "upload", "-r", "artifactory"]).wait()
+    code = Popen(["twine", "upload", "dist/*", "-r", "artifactory"]).wait()
     if code:
         raise RuntimeError("Error publishing to PyPi")
 

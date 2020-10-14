@@ -10,7 +10,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-install_requires_list = []
+install_requires_list = ["twine>=1.7"]
 tests_require = ["pytest>=2.9"]
 
 
