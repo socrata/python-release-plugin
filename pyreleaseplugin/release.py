@@ -35,8 +35,7 @@ from subprocess import Popen
 from pyreleaseplugin.git import commit_changes, is_tree_clean, push, tag
 from setuptools import Command
 
-
-VERSION_RE = re.compile('^__version__\s*=\s*"(.*?)"$', re.MULTILINE)
+VERSION_RE = re.compile(r'^__version__\s*=\s*"(.*?)"$', re.MULTILINE)
 
 
 def current_version_from_version_file(version_file):
@@ -55,7 +54,7 @@ def current_version_from_version_file(version_file):
     m = VERSION_RE.search(contents)
     try:
         version = m.group(1)
-    except:
+    except (AttributeError, IndexError):
         raise IOError(
             "Unable to find __version__ variable defined in {}".format(version_file))
 
@@ -100,7 +99,7 @@ def bump_patch_version(version):
     return '.'.join([str(x) for x in parts])
 
 
-RELEASE_LINE_RE = re.compile("^([^\s]+) \(([^\)]+)\)$")
+RELEASE_LINE_RE = re.compile(r"^([^\s]+) \(([^\)]+)\)$")
 
 
 def add_changelog_entry(filename, new_version, message):
@@ -113,13 +112,12 @@ def add_changelog_entry(filename, new_version, message):
     """
     def head_and_tail(lines):
         head = []
-        tail = [line for line in lines]
+        tail = lines
 
         while tail:
             if RELEASE_LINE_RE.search(tail[0]):
                 break
-            else:
-                head.append(tail.pop(0))
+            head.append(tail.pop(0))
 
         return (head, tail)
 
@@ -158,7 +156,7 @@ def get_input():
 
 
 def parse_y_n_response(response):
-    return True if response.strip().lower() in ('y', 'yes') else False
+    return response.strip().lower() in ('y', 'yes')
 
 
 def build():
