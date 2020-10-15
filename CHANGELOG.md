@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+0.2.13 (2020-10-15)
+-------------------
+"use twine instead of setuptools to release"
+
 0.2.11 (2019-11-19)
 -------------------
 ""
