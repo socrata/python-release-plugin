@@ -1,4 +1,4 @@
-from subprocess import Popen
+from subprocess import Popen, PIPE
 
 
 def is_tree_clean():
@@ -10,6 +10,19 @@ def is_tree_clean():
     """
     # pylint: disable=simplifiable-if-expression
     return False if Popen(["git", "diff-files", "--quiet"]).wait() else True
+
+
+def get_default_branch():
+    """
+    Find the default branch of the remote repo.
+
+    Returns:
+        branch (str): The default branch
+    """
+    remote_info = Popen(["git", "remote", "show", "origin"], stdout=PIPE)
+    info_sliced = Popen(["awk", "/HEAD branch/ {print $NF}"], stdin=remote_info.stdout, stdout=PIPE)
+    head_branch = info_sliced.communicate()[0]
+    return head_branch.decode("utf-8").rstrip()
 
 
 def commit_changes(version):

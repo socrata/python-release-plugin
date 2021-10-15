@@ -18,7 +18,7 @@ specified on the command-line. The full list of allowed command-line options is 
     ("description=", "d", "a description of the work done in the release"),
     ("changelog-file=", "c", "a Markdown file containing a log changes"),
     ("no-update-changelog", "C", "do not update a Changlog file"),
-    ("push-to-master", "p", "whether the changes from this script should be pushed to master")
+    ("push-to-remote", "p", "whether to push to the remote repository")
 
 
 
@@ -32,7 +32,7 @@ import re
 from datetime import datetime
 from subprocess import Popen
 
-from pyreleaseplugin.git import commit_changes, is_tree_clean, push, tag
+from pyreleaseplugin.git import commit_changes, is_tree_clean, push, tag, get_default_branch
 from setuptools import Command
 
 VERSION_RE = re.compile(r'^__version__\s*=\s*"(.*?)"$', re.MULTILINE)
@@ -210,7 +210,7 @@ class ReleaseCommand(Command):
         ("description=", "d", "a description of the work done in the release"),
         ("changelog-file=", "c", "a Markdown file containing a log changes"),
         ("no-update-changelog", "C", "do not update a Changlog file"),
-        ("push-to-master", "p", "whether the changes from this script should be pushed to master")
+        ("push-to-remote", "p", "whether to push to the remote repository")
     ]
 
     def initialize_options(self):
@@ -221,7 +221,7 @@ class ReleaseCommand(Command):
         self.changelog_file = None         # path to a changelog file
         self.no_update_changelog = False   # whether to skip changelog updates
         self.description = None            # description text
-        self.push_to_master = None         # whether to push to master
+        self.push_to_remote = None         # whether to push to the remote repository
 
     def finalize_options(self):
         if not os.path.exists(self.version_file):
@@ -244,7 +244,7 @@ class ReleaseCommand(Command):
         if not self.no_update_changelog:
             self.description = clean_description(self.description) or get_description()
 
-        self.push_to_master = bool(self.push_to_master)
+        self.push_to_remote = bool(self.push_to_remote)
 
     def run(self):
         # fail fast if working tree is not clean
@@ -274,14 +274,15 @@ class ReleaseCommand(Command):
         tag(self.version)
 
         # push changes to Github
-        # NOTE: this will push from the currently checked out branch to origin/master;
+        # NOTE: this will push from the currently checked out branch to the default remote branch;
         # TODO: accommodate releases from other branches
-        push_to_master = self.push_to_master or parse_y_n_response(
-            input("Would you like to push the changes to master? [y/n] ").strip())
+        push_to_remote = self.push_to_remote or parse_y_n_response(
+            input("Push changes to the remote repository (y/n)? ").strip())
 
-        if push_to_master:
-            print("Pushing changes to the master branch on Github")
-            push("master")
+        if push_to_remote:
+            branch = get_default_branch()
+            print("Pushing changes to the {} branch on Github".format(branch))
+            push(branch)
 
         # build and publish
         build()

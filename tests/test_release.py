@@ -24,13 +24,13 @@ class TestRelease(unittest.TestCase):
         self.changelog_file = os.path.join(THIS_DIR, "resources", "CHANGELOG.md")
 
     def test_current_version_from_version_file(self):
-        self.assertEquals("0.2.5", current_version_from_version_file(self.version_file))
+        self.assertEqual("0.2.5", current_version_from_version_file(self.version_file))
 
     def test_bump_patch_version(self):
         version = "0.1.0"
         expected = "0.1.1"
         actual = bump_patch_version(version)
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     def test_updpate_version_file(self):
         tmp = tempfile.NamedTemporaryFile(mode='r')
@@ -38,7 +38,7 @@ class TestRelease(unittest.TestCase):
         version_file = tmp.name
         update_version_file(version_file, "7.8.9")
         try:
-            self.assertEquals("7.8.9", current_version_from_version_file(version_file))
+            self.assertEqual("7.8.9", current_version_from_version_file(version_file))
         except:
             tmp.close()
             raise
@@ -56,7 +56,7 @@ class TestRelease(unittest.TestCase):
         with open(changelog_file, "r") as infile:
             changelog_contents = infile.read()
             try:
-                self.assertEquals(expected, changelog_contents)
+                self.assertEqual(expected, changelog_contents)
             except:
                 tmp.close()
                 raise
@@ -71,7 +71,7 @@ class TestRelease(unittest.TestCase):
         with open(changelog_file, "r") as infile:
             changelog_contents = infile.read()
             try:
-                self.assertEquals(expected, changelog_contents)
+                self.assertEqual(expected, changelog_contents)
             except:
                 tmp.close()
                 raise
