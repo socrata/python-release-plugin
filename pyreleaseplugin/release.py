@@ -255,6 +255,17 @@ class ReleaseCommand(Command):
 
         self.push_to_remote = bool(self.push_to_remote)
 
+        print ("Options selected for ReleaseCommand: ")
+        print ("\told_version: %s" % self.old_version)
+        print ("\tversion: %s" % self.version)
+        print ("\tversion_file: %s" % self.version_file)
+        print ("\tno_bump_version: %s" % self.no_bump_version)
+        print ("\tchangelog_file: %s" % self.changelog_file)
+        print ("\tno_update_changelog: %s" % self.no_update_changelog)
+        print ("\tdescription: %s" % self.description)
+        print ("\tpush_to_remote: %s" % self.push_to_remote)
+        print ("\tRepository: %s" % self.repository)
+
     def run(self):
         # fail fast if working tree is not clean
         if not is_tree_clean():
