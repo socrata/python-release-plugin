@@ -230,6 +230,7 @@ class ReleaseCommand(Command):
         self.no_update_changelog = False   # whether to skip changelog updates
         self.description = None            # description text
         self.push_to_remote = None         # whether to push to the remote repository
+        self.repository = self.repository
 
     def finalize_options(self):
         if not os.path.exists(self.version_file):
@@ -294,4 +295,4 @@ class ReleaseCommand(Command):
 
         # build and publish
         build()
-        publish_to_pypi()
+        publish_to_pypi(self.repository)
