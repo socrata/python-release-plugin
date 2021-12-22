@@ -230,7 +230,7 @@ class ReleaseCommand(Command):
         self.no_update_changelog = False   # whether to skip changelog updates
         self.description = None            # description text
         self.push_to_remote = None         # whether to push to the remote repository
-        self.repository = self.repository
+        self.repository = None             # Name of the repository to use for upload
 
     def finalize_options(self):
         if not os.path.exists(self.version_file):
@@ -254,6 +254,7 @@ class ReleaseCommand(Command):
             self.description = clean_description(self.description) or get_description()
 
         self.push_to_remote = bool(self.push_to_remote)
+        self.repository = self.repository
 
         print ("Options selected for ReleaseCommand: ")
         print ("\told_version: %s" % self.old_version)
