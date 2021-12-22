@@ -19,6 +19,7 @@ specified on the command-line. The full list of allowed command-line options is 
     ("changelog-file=", "c", "a Markdown file containing a log changes"),
     ("no-update-changelog", "C", "do not update a Changlog file"),
     ("push-to-remote", "p", "whether to push to the remote repository")
+    ("repository", "r", "repository to be used by the ReleaseCommand for the artifact upload. If ommitted, repository will be defaulted to PyPi")
 
 
 
@@ -168,11 +169,18 @@ def build():
         raise RuntimeError("Error building wheel")
 
 
-def publish_to_pypi():
+def publish_to_pypi(repository):
     """
     Publish the distribution to our local PyPi.
+    :param repository: the repository to be used by the ReleaseCommand for the artifact upload. If ommitted, repository will be defaulted to PyPi
     """
-    code = Popen(["twine", "upload", "dist/*", "-r", "artifactory"]).wait()
+    cmd = None
+    if repository is None:
+        cmd = ["twine", "upload", "dist/*", "--repository", "pypi"]
+    else:
+        cmd = ["twine", "upload", "dist/*", "--repository", repository]
+
+    code = Popen(cmd).wait()
     if code:
         raise RuntimeError("Error publishing to PyPi")
 
@@ -222,6 +230,7 @@ class ReleaseCommand(Command):
         self.no_update_changelog = False   # whether to skip changelog updates
         self.description = None            # description text
         self.push_to_remote = None         # whether to push to the remote repository
+        self.repository = None             # Name of the repository to use for upload
 
     def finalize_options(self):
         if not os.path.exists(self.version_file):
@@ -245,6 +254,7 @@ class ReleaseCommand(Command):
             self.description = clean_description(self.description) or get_description()
 
         self.push_to_remote = bool(self.push_to_remote)
+        self.repository = self.repository
 
     def run(self):
         # fail fast if working tree is not clean
@@ -286,4 +296,4 @@ class ReleaseCommand(Command):
 
         # build and publish
         build()
-        publish_to_pypi()
+        publish_to_pypi(self.repository)
