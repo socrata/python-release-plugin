@@ -31,7 +31,6 @@ a section named "release").
 import os
 import re
 from datetime import datetime
-from subprocess import Popen
 
 from pyreleaseplugin.git import commit_changes, is_tree_clean, push, tag, get_default_branch
 from setuptools import Command
@@ -39,6 +38,7 @@ from twine import cli
 from twine import exceptions
 import http
 import requests
+from distutils.core import run_setup
 
 VERSION_RE = re.compile(r'^__version__\s*=\s*"(.*?)"$', re.MULTILINE)
 
@@ -168,9 +168,10 @@ def build():
     """
     Build a wheel distribution.
     """
-    code = Popen(["python3", "setup.py", "clean", "bdist_wheel"]).wait()
-    if code:
-        raise RuntimeError("Error building wheel")
+    try:
+        run_setup('setup.py', ["clean", "bdist_wheel"],stop_after='run')
+    except Exception as exc:
+        raise RuntimeError("Error building wheel", exc)
 
 def publish_to_pypi(repository):
     """
