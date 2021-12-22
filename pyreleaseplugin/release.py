@@ -35,6 +35,10 @@ from subprocess import Popen
 
 from pyreleaseplugin.git import commit_changes, is_tree_clean, push, tag, get_default_branch
 from setuptools import Command
+from twine import cli
+from twine import exceptions
+import http
+import requests
 
 VERSION_RE = re.compile(r'^__version__\s*=\s*"(.*?)"$', re.MULTILINE)
 
@@ -151,7 +155,7 @@ def get_input():
         while True:
             lines.append(input())
     except EOFError:
-        pass
+        pass    
 
     return '\n'.join(lines)
 
@@ -164,33 +168,47 @@ def build():
     """
     Build a wheel distribution.
     """
-    code = Popen(["python", "setup.py", "clean", "bdist_wheel"]).wait()
+    code = Popen(["python3", "setup.py", "clean", "bdist_wheel"]).wait()
     if code:
         raise RuntimeError("Error building wheel")
-
 
 def publish_to_pypi(repository):
     """
     Publish the distribution to our local PyPi.
     :param repository: the repository to be used by the ReleaseCommand for the artifact upload. If ommitted, repository will be defaulted to PyPi
     """
+    
+    '''
+    New code introduced by Julio V. based on twine/__main__.py
+    '''
     cmd = None
     if repository is None:
-        cmd = ["twine", "upload", "dist/*", "--repository", "pypi"]
+        cmd = ["upload", "dist/*", "--repository", "pypi"]
     else:
-        cmd = ["twine", "upload", "dist/*", "--repository", repository]
+        cmd = ["upload", "dist/*", "--repository", "NexusPyPiTest"]
 
-    code = Popen(cmd).wait()
-    if code:
-        raise RuntimeError("Error publishing to PyPi")
-
+    try:
+        result = cli.dispatch(cmd)
+    except requests.HTTPError as exc:
+        status_code = exc.response.status_code
+        status_phrase = http.HTTPStatus(status_code).phrase
+        result = (
+            f"{exc.__class__.__name__}: {status_code} {status_phrase} "
+            f"from {exc.response.url}\n"
+            f"{exc.response.reason}"
+        )
+        raise RuntimeError("Error publishing to PyPi", exc)
+    except exceptions.TwineException as exc:
+        result = f"{exc.__class__.__name__}: {exc.args[0]}"
+        raise RuntimeError("Error publishing to PyPi", exc)
+    code = 0
+    
 
 def clean_description(description):
     """
     Ensure two (and only two) newlines at the end of the description text.
     """
     return description.strip() + "\n\n" if description is not None else None
-
 
 def get_description():
     """
@@ -230,7 +248,7 @@ class ReleaseCommand(Command):
         self.no_update_changelog = False   # whether to skip changelog updates
         self.description = None            # description text
         self.push_to_remote = None         # whether to push to the remote repository
-        self.repository = self.repository
+        self.repository = None             # Name of the repository to use for upload
 
     def finalize_options(self):
         if not os.path.exists(self.version_file):
@@ -254,6 +272,7 @@ class ReleaseCommand(Command):
             self.description = clean_description(self.description) or get_description()
 
         self.push_to_remote = bool(self.push_to_remote)
+        self.repository = self.repository
 
         print ("Options selected for ReleaseCommand: ")
         print ("\told_version: %s" % self.old_version)
