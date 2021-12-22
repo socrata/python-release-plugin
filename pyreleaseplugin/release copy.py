@@ -172,12 +172,22 @@ def build():
     if code:
         raise RuntimeError("Error building wheel")
 
+
+
 def publish_to_pypi(repository):
     """
     Publish the distribution to our local PyPi.
-    :param repository: the repository to be used by the ReleaseCommand for the artifact upload. If ommitted, repository will be defaulted to PyPi
     """
+    ''' 
+    #Orinal Code
+    code = Popen(["python3", "-m", "twine", "upload", "dist/*", "--repository", "NexusPyPiTest"]).wait()
+    if code:
+        raise RuntimeError("Error publishing to PyPi")
+    '''
 
+    '''
+    New code introduced by Julio V. based on twine/__main__.py
+    '''
     cmd = None
     if repository is None:
         cmd = ["upload", "dist/*", "--repository", "pypi"]
@@ -246,6 +256,7 @@ class ReleaseCommand(Command):
         self.description = None            # description text
         self.push_to_remote = None         # whether to push to the remote repository
         self.repository = None             # Name of the repository to use for upload
+
 
     def finalize_options(self):
         if not os.path.exists(self.version_file):
