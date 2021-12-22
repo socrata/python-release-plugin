@@ -177,10 +177,7 @@ def publish_to_pypi(repository):
     Publish the distribution to our local PyPi.
     :param repository: the repository to be used by the ReleaseCommand for the artifact upload. If ommitted, repository will be defaulted to PyPi
     """
-    
-    '''
-    New code introduced by Julio V. based on twine/__main__.py
-    '''
+
     cmd = None
     if repository is None:
         cmd = ["upload", "dist/*", "--repository", "pypi"]
