@@ -183,7 +183,7 @@ def publish_to_pypi(repository):
     if repository is None:
         cmd = ["upload", "dist/*", "--repository", "pypi"]
     else:
-        cmd = ["upload", "dist/*", "--repository", "NexusPyPiTest"]
+        cmd = ["upload", "dist/*", "--repository", repository]
 
     try:
         result = cli.dispatch(cmd)
