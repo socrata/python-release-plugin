@@ -19,6 +19,7 @@ specified on the command-line. The full list of allowed command-line options is 
     ("changelog-file=", "c", "a Markdown file containing a log changes"),
     ("no-update-changelog", "C", "do not update a Changlog file"),
     ("push-to-remote", "p", "whether to push to the remote repository")
+    ("repository", "r", "repository to be used by the ReleaseCommand for the artifact upload. If ommitted, repository will be defaulted to PyPi")
 
 
 
@@ -30,10 +31,14 @@ a section named "release").
 import os
 import re
 from datetime import datetime
-from subprocess import Popen
 
 from pyreleaseplugin.git import commit_changes, is_tree_clean, push, tag, get_default_branch
 from setuptools import Command
+from twine import cli
+from twine import exceptions
+import http
+import requests
+from distutils.core import run_setup
 
 VERSION_RE = re.compile(r'^__version__\s*=\s*"(.*?)"$', re.MULTILINE)
 
@@ -150,7 +155,7 @@ def get_input():
         while True:
             lines.append(input())
     except EOFError:
-        pass
+        pass    
 
     return '\n'.join(lines)
 
@@ -163,26 +168,45 @@ def build():
     """
     Build a wheel distribution.
     """
-    code = Popen(["python", "setup.py", "clean", "bdist_wheel"]).wait()
-    if code:
-        raise RuntimeError("Error building wheel")
+    try:
+        run_setup('setup.py', ["clean", "bdist_wheel"],stop_after='run')
+    except Exception as exc:
+        raise RuntimeError("Error building wheel", exc)
 
-
-def publish_to_pypi():
+def publish_to_pypi(repository):
     """
     Publish the distribution to our local PyPi.
+    :param repository: the repository to be used by the ReleaseCommand for the artifact upload. If ommitted, repository will be defaulted to PyPi
     """
-    code = Popen(["twine", "upload", "dist/*", "-r", "artifactory"]).wait()
-    if code:
-        raise RuntimeError("Error publishing to PyPi")
 
+    cmd = None
+    if repository is None:
+        cmd = ["upload", "dist/*", "--repository", "pypi"]
+    else:
+        cmd = ["upload", "dist/*", "--repository", repository]
+
+    try:
+        result = cli.dispatch(cmd)
+    except requests.HTTPError as exc:
+        status_code = exc.response.status_code
+        status_phrase = http.HTTPStatus(status_code).phrase
+        result = (
+            f"{exc.__class__.__name__}: {status_code} {status_phrase} "
+            f"from {exc.response.url}\n"
+            f"{exc.response.reason}"
+        )
+        raise RuntimeError("Error publishing to PyPi", exc)
+    except exceptions.TwineException as exc:
+        result = f"{exc.__class__.__name__}: {exc.args[0]}"
+        raise RuntimeError("Error publishing to PyPi", exc)
+    code = 0
+    
 
 def clean_description(description):
     """
     Ensure two (and only two) newlines at the end of the description text.
     """
     return description.strip() + "\n\n" if description is not None else None
-
 
 def get_description():
     """
@@ -222,6 +246,7 @@ class ReleaseCommand(Command):
         self.no_update_changelog = False   # whether to skip changelog updates
         self.description = None            # description text
         self.push_to_remote = None         # whether to push to the remote repository
+        self.repository = None             # Name of the repository to use for upload
 
     def finalize_options(self):
         if not os.path.exists(self.version_file):
@@ -245,6 +270,18 @@ class ReleaseCommand(Command):
             self.description = clean_description(self.description) or get_description()
 
         self.push_to_remote = bool(self.push_to_remote)
+        self.repository = self.repository
+
+        print ("Options selected for ReleaseCommand: ")
+        print ("\told_version: %s" % self.old_version)
+        print ("\tversion: %s" % self.version)
+        print ("\tversion_file: %s" % self.version_file)
+        print ("\tno_bump_version: %s" % self.no_bump_version)
+        print ("\tchangelog_file: %s" % self.changelog_file)
+        print ("\tno_update_changelog: %s" % self.no_update_changelog)
+        print ("\tdescription: %s" % self.description)
+        print ("\tpush_to_remote: %s" % self.push_to_remote)
+        print ("\tRepository: %s" % self.repository)
 
     def run(self):
         # fail fast if working tree is not clean
@@ -286,4 +323,4 @@ class ReleaseCommand(Command):
 
         # build and publish
         build()
-        publish_to_pypi()
+        publish_to_pypi(self.repository)
